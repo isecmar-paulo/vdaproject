@@ -12,7 +12,7 @@ venv/
 .streamlit/
 
 # Data files (opcional)
-data/*.csv
+# data/*.csv
 
 # OS
 .DS_Store
