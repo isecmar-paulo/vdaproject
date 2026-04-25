@@ -53,7 +53,7 @@ st.markdown(
 
 try:
     # ============================================================
-    # DATA PIPELINE — LOAD, INSPECT, PREPROCESS
+    # DATA PIPELINE — carregar, inspecionar, preprocessar
     # ============================================================
 
     df_original = load_dataset(DATA_PATH)
@@ -71,7 +71,7 @@ try:
         st.stop()
 
     # ============================================================
-    # SIDEBAR — CONTROL PANEL
+    # SIDEBAR — painél de controlo
     # ============================================================
 
     st.sidebar.header("Privacy Configuration")
@@ -166,7 +166,7 @@ try:
         st.stop()
 
     # ============================================================
-    # DATA PIPELINE — APPLY SELECTED PRIVACY TECHNIQUE
+    # DATA PIPELINE — Aplicar a técnica de preservação de privacidade selecionada
     # ============================================================
 
     if technique == "None":
@@ -275,7 +275,7 @@ try:
 
 
     # ============================================================
-    # OUTPUT — TABS
+    # OUTPUT — Tabs 
     # ============================================================
 
     tab_data, tab_transformation, tab_statistics, tab_visual, tab_tradeoff = st.tabs(
@@ -289,7 +289,7 @@ try:
     )
 
     # ============================================================
-    # TAB 1 — DATA PREPARATION
+    # TAB 1 — Preparação de Dados
     # ============================================================
 
     with tab_data:
@@ -338,7 +338,7 @@ try:
         )
 
     # ============================================================
-    # TAB 2 — TRANSFORMATION
+    # TAB 2 — Transformação ao dataset 
     # ============================================================
 
     with tab_transformation:
@@ -377,7 +377,7 @@ try:
         )
 
     # ============================================================
-    # TAB 3 — STATISTICAL ANALYSIS
+    # TAB 3 — Análise Estatistica
     # ============================================================
 
     with tab_statistics:
@@ -423,7 +423,7 @@ try:
         st.dataframe(comparison["correlation_difference"])
 
     # ============================================================
-    # TAB 4 — VISUAL ANALYSIS
+    # TAB 4 — Análise Visual
     # ============================================================
 
     with tab_visual:
@@ -496,7 +496,7 @@ try:
         st.plotly_chart(fig_kl, use_container_width=True)
 
     # ============================================================
-    # TAB 5 — Trade-off Evaluation
+    # TAB 5 — Avaliação do Trade-off
     # ============================================================
 
     with tab_tradeoff:
