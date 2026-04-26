@@ -1,6 +1,5 @@
 import streamlit as st
 import pandas as pd
-import plotly.express as px
 
 from src.data_preparation import (
     load_dataset,
@@ -34,6 +33,30 @@ from src.visualizations import plot_tradeoff
 
 
 DATA_PATH = "data/medicalData.csv"
+
+def footer():
+    st.markdown(
+        """
+        <style>
+        .footer {
+            position: fixed;
+            left: 0;
+            bottom: 0;
+            width: 100%;
+            background-color: white;
+            color: black;
+            text-align: center;
+            padding: 10px;
+            font-size: 14px;
+            border-top: 1px solid #e6e6e6;
+        }
+        </style>
+        <div class="footer">
+            <p>Desenvolvido por Juliana Jesus & Paulo Silva | VDA Project [cite: 2]</p>
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
 
 
 st.set_page_config(
@@ -331,8 +354,6 @@ try:
             st.write("Basic Descriptive Statistics - Categorical Variables")
             st.dataframe(inspection["categorical_statistics"])
 
-        
-
         st.subheader("Prepared Dataset Preview")
         st.dataframe(df_prepared.head())
 
@@ -357,64 +378,6 @@ try:
             validation["all_columns_numeric"],
         )
 
-        st.subheader("Exploratory Visualization")
-
-        numeric_cols_original = df_original.select_dtypes(
-            include=["int64", "float64"]
-        ).columns.tolist()
-
-        categorical_cols_original = df_original.select_dtypes(
-            include=["object", "category"]
-        ).columns.tolist()
-
-        selected_num_col = st.selectbox(
-            "Select numeric variable",
-            numeric_cols_original,
-            key="explore_numeric"
-        )
-
-        fig_hist = px.histogram(
-                df_original,
-                x=selected_num_col,
-                nbins=30,
-                title=f"Histogram - {selected_num_col}"
-        )
-
-        st.plotly_chart(fig_hist, use_container_width=True)
-
-        fig_box = px.box(
-            df_original,
-            y=selected_num_col,
-            title=f"Boxplot - {selected_num_col}"
-        )
-
-        st.plotly_chart(fig_box, use_container_width=True)
-
-        if len(categorical_cols_original) > 0:
-            selected_cat_col = st.selectbox(
-                "Select categorical variable",
-                categorical_cols_original,
-                key="explore_categorical"
-            )
-
-            category_counts = (
-                df_original[selected_cat_col]
-                .value_counts()
-                .reset_index()
-            )
-
-            category_counts.columns = [selected_cat_col, "count"]
-
-            fig_bar = px.bar(
-                category_counts,
-                x=selected_cat_col,
-                y="count",
-                title=f"Category Distribution - {selected_cat_col}"
-            )
-
-            st.plotly_chart(fig_bar, use_container_width=True)
-
-        
     # ============================================================
     # TAB 2 — Transformação ao dataset 
     # ============================================================
