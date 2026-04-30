@@ -174,4 +174,59 @@ def plot_tradeoff_comparison(df_tradeoff):
         title="Privacy-Utility Trade-off Comparison"
     )
 
+    # Ideal region: high privacy and high utility
+    fig.add_shape(
+        type="rect",
+        x0=0.7,
+        x1=1.0,
+        y0=0.7,
+        y1=1.0,
+        fillcolor="LightGreen",
+        opacity=0.2,
+        line_width=0,
+    )
+
+    fig.add_annotation(
+        x=0.85,
+        y=0.95,
+        text="Ideal region",
+        showarrow=False,
+    )
+
+    fig.update_layout(
+        xaxis=dict(
+            range=[0, 1],
+            title="Privacy Score",
+        ),
+        yaxis=dict(
+            range=[0, 1],
+            title="Utility Score",
+        ),
+        height=500,
+    )
+
+    return fig
+
+def plot_privacy_utility_dual_bar(df_tradeoff):
+    df_melt = df_tradeoff.melt(
+        id_vars="Technique",
+        value_vars=["Privacy Score", "Utility Score"],
+        var_name="Metric",
+        value_name="Score",
+    )
+
+    fig = px.bar(
+        df_melt,
+        x="Technique",
+        y="Score",
+        color="Metric",
+        barmode="group",
+        title="Privacy vs Utility by Technique",
+    )
+
+    fig.update_layout(
+        yaxis=dict(range=[0, 1], title="Score"),
+        xaxis_title="Technique",
+    )
+
     return fig
