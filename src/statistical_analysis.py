@@ -224,33 +224,68 @@ def compute_utility_score(distribution_df: pd.DataFrame) -> float:
 
     return float(1 / (1 + mean_js))
 
-
 def compute_privacy_score(
-    technique: str,
-    sigma: float = None,
-    epsilon: float = None,
-    sampling_rate: float = None
-) -> float:
-    """
-    Approximate privacy score depending on the technique.
-    """
-    if technique == "Gaussian Noise" and sigma is not None:
-        return float(sigma)
+    technique,
+    sigma=1.0,
+    epsilon=1.0,
+    sampling_rate=0.8,
+    bin_size=None,
+    data_range=None,
+   
+):
+    if technique == "Gaussian Noise":
+        return sigma / (sigma + 1)
 
-    if technique == "Laplace Noise" and epsilon is not None:
-        return float(1 / epsilon)
+    if technique == "Laplace Noise":
+        return 1 / (1 + epsilon)
 
-    if technique == "Sampling" and sampling_rate is not None:
-        return float(1 - sampling_rate)
+    if technique == "Sampling":
+        return 1 - sampling_rate
 
-    if technique.startswith("Generalization"):
-        return 0.5  # heuristic (can be refined)
+    if technique in ["Generalization - Age", "Generalization - BMI"]:
+        if bin_size is None or data_range is None or data_range <= 0:
+            return 0.0
+
+        return float(min(1.0, bin_size / data_range))
 
     return 0.0
 
 
+# def compute_privacy_score(
+#     technique: str,
+#     sigma: float = None,
+#     epsilon: float = None,
+#     sampling_rate: float = None
+# ) -> float:
+#     """
+#     Approximate privacy score depending on the technique.
+#     """
+#     if technique == "Gaussian Noise" and sigma is not None:
+#         return float(sigma)
+
+#     if technique == "Laplace Noise" and epsilon is not None:
+#         return float(1 / epsilon)
+
+#     if technique == "Sampling" and sampling_rate is not None:
+#         return float(1 - sampling_rate)
+
+#     if technique.startswith("Generalization"):
+#         return 0.5  # heuristic (can be refined)
+
+#     return 0.0
+
+
+# def compute_tradeoff_score(utility: float, privacy: float) -> float:
+#     """
+#     Combine utility and privacy into a trade-off score.
+#     """
+#     return float(utility / (1 + privacy))
+
 def compute_tradeoff_score(utility: float, privacy: float) -> float:
     """
-    Combine utility and privacy into a trade-off score.
+    Compute a balanced privacy-utility trade-off score.
+
+    The geometric mean penalizes configurations where either
+    privacy or utility is low.
     """
-    return float(utility / (1 + privacy))
+    return float((utility * privacy) ** 0.5)

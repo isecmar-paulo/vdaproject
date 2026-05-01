@@ -21,6 +21,7 @@ from src.statistical_analysis import (
 from src.visualizations import (
     plot_histogram_comparison,
     plot_boxplot_comparison,
+    plot_privacy_utility_dual_bar,
     plot_scatter_comparison,
     plot_correlation_heatmap,
     plot_metric_bar_chart,
@@ -29,12 +30,9 @@ from src.visualizations import (
 )
 
 
-
 from src.visualizations import plot_tradeoff
 
-
 DATA_PATH = "data/medicalData.csv"
-
 
 st.set_page_config(
     page_title="Privacy-Preserving Visual Analytics Dashboard",
@@ -75,10 +73,107 @@ try:
     # SIDEBAR — painél de controlo
     # ============================================================
 
-    st.sidebar.header("Privacy Configuration")
+    # st.sidebar.header("Privacy Configuration")
+
+    # technique = st.sidebar.selectbox(
+    #     "Select Privacy-Preserving Technique",
+    #     [
+    #         "None",
+    #         "Generalization - Age",
+    #         "Generalization - BMI",
+    #         "Gaussian Noise",
+    #         "Sampling",
+    #         "Laplace Noise",
+    #     ],
+    # )
+
+    # sigma = 1.0
+    # epsilon = 1.0
+    # sampling_rate = 0.8
+    # selected_columns = []
+
+    # if technique == "Gaussian Noise":
+    #     sigma = st.sidebar.slider(
+    #         "Sigma (Noise Level)",
+    #         min_value=0.1,
+    #         max_value=10.0,
+    #         value=1.0,
+    #         step=0.1,
+    #     )
+
+    #     selected_columns = st.sidebar.multiselect(
+    #         "Select Numeric Columns",
+    #         numeric_columns,
+    #         default=numeric_columns,
+    #     )
+
+    # elif technique == "Laplace Noise":
+    #     epsilon = st.sidebar.slider(
+    #         "Epsilon (Privacy Parameter)",
+    #         min_value=0.1,
+    #         max_value=5.0,
+    #         value=1.0,
+    #         step=0.1,
+    #     )
+
+    #     selected_columns = st.sidebar.multiselect(
+    #         "Select Numeric Columns",
+    #         numeric_columns,
+    #         default=numeric_columns,
+    #     )
+
+    # elif technique == "Sampling":
+    #     sampling_rate = st.sidebar.slider(
+    #         "Sampling Rate",
+    #         min_value=0.1,
+    #         max_value=1.0,
+    #         value=0.8,
+    #         step=0.05,
+    #     )
+
+    # st.sidebar.header("Visualization Controls")
+
+    # selected_column = st.sidebar.selectbox(
+    #     "Variable for Histogram and Boxplot",
+    #     numeric_columns,
+    # )
+
+    # x_column = st.sidebar.selectbox(
+    #     "X-axis for Scatter Plot",
+    #     numeric_columns,
+    #     index=0,
+    # )
+
+    # y_column_index = 1 if len(numeric_columns) > 1 else 0
+
+    # y_column = st.sidebar.selectbox(
+    #     "Y-axis for Scatter Plot",
+    #     numeric_columns,
+    #     index=y_column_index,
+    # )
+
+    # bins = st.sidebar.slider(
+    #     "Number of Bins",
+    #     min_value=10,
+    #     max_value=60,
+    #     value=20,
+    #     step=5,
+    # )
+
+    #st.sidebar.header("Data Analysis")
+
+    #st.sidebar.caption(
+    #    "Adjust parameters to control the level of privacy applied to the dataset."
+    #)
+
+# ============================================================
+# SIDEBAR — PRIVACY TRANSFORMATION SETTINGS
+# ============================================================
+
+    st.sidebar.header("Privacy Transformation Settings")
 
     technique = st.sidebar.selectbox(
-        "Select Privacy-Preserving Technique",
+        "Privacy-preserving technique",
         [
             "None",
             "Generalization - Age",
@@ -87,95 +182,159 @@ try:
             "Sampling",
             "Laplace Noise",
         ],
+        help="Select the privacy-preserving transformation to apply to the prepared dataset.",
     )
 
     sigma = 1.0
     epsilon = 1.0
     sampling_rate = 0.8
     selected_columns = []
+    bin_size = None
+    data_range = None
 
-    if technique == "Gaussian Noise":
+    if technique == "Generalization - Age":
+        col = "age"
+        data_range = df_prepared[col].max() - df_prepared[col].min()
+
+        bin_size = st.sidebar.slider(
+            "Age generalization interval",
+            min_value=1,
+            max_value=int(data_range),
+            value=10,
+            step=1,
+            help=(
+                "Defines the size of the age intervals used for generalization. "
+                "Larger intervals increase privacy but reduce data precision."
+            ),
+        )
+
+    elif technique == "Generalization - BMI":
+        col = "bmi"
+        data_range = df_prepared[col].max() - df_prepared[col].min()
+
+        bin_size = st.sidebar.slider(
+            "BMI generalization interval",
+            min_value=0.5,
+            max_value=float(data_range),
+            value=2.0,
+            step=0.5,
+            help=(
+                "Defines the size of the BMI intervals used for generalization. "
+                "Larger intervals increase privacy but reduce detail in the data."
+            ),
+        )
+
+    elif technique == "Gaussian Noise":
         sigma = st.sidebar.slider(
-            "Sigma (Noise Level)",
+            "Gaussian noise level (σ)",
             min_value=0.1,
             max_value=10.0,
             value=1.0,
             step=0.1,
+            help=(
+                "Controls the standard deviation of the Gaussian noise added to selected numeric variables. "
+                "Higher values introduce stronger perturbation."
+            ),
         )
 
         selected_columns = st.sidebar.multiselect(
-            "Select Numeric Columns",
+            "Variables to perturb",
             numeric_columns,
             default=numeric_columns,
+            help="Select the numeric variables to which Gaussian noise will be applied.",
         )
 
     elif technique == "Laplace Noise":
         epsilon = st.sidebar.slider(
-            "Epsilon (Privacy Parameter)",
+            "Privacy budget (ε)",
             min_value=0.1,
             max_value=5.0,
             value=1.0,
             step=0.1,
+            help=(
+                "Controls the privacy budget used for Laplace noise. "
+                "Lower ε values provide stronger privacy but usually reduce utility."
+            ),
         )
 
         selected_columns = st.sidebar.multiselect(
-            "Select Numeric Columns",
+            "Variables to perturb",
             numeric_columns,
             default=numeric_columns,
+            help="Select the numeric variables to which Laplace noise will be applied.",
         )
 
     elif technique == "Sampling":
         sampling_rate = st.sidebar.slider(
-            "Sampling Rate",
+            "Retained data proportion",
             min_value=0.1,
             max_value=1.0,
             value=0.8,
             step=0.05,
+            help=(
+                "Defines the proportion of records retained after sampling. "
+                "Lower values expose less data and therefore increase privacy."
+            ),
         )
 
-    st.sidebar.header("Visualization Controls")
+
+    # ============================================================
+    # SIDEBAR — VISUAL EVALUATION SETTINGS
+    # ============================================================
+
+    st.sidebar.header("Visual Evaluation Settings")
 
     selected_column = st.sidebar.selectbox(
-        "Variable for Histogram and Boxplot",
+        "Variable for distribution plots",
         numeric_columns,
+        help="Select the numeric variable used in the histogram and boxplot comparisons.",
     )
 
     x_column = st.sidebar.selectbox(
-        "X-axis for Scatter Plot",
+        "Scatter plot X variable",
         numeric_columns,
         index=0,
+        help="Select the variable shown on the X-axis of the scatter plot.",
     )
 
     y_column_index = 1 if len(numeric_columns) > 1 else 0
 
     y_column = st.sidebar.selectbox(
-        "Y-axis for Scatter Plot",
+        "Scatter plot Y variable",
         numeric_columns,
         index=y_column_index,
+        help="Select the variable shown on the Y-axis of the scatter plot.",
     )
 
     bins = st.sidebar.slider(
-        "Number of Bins",
+        "Histogram bin count",
         min_value=10,
         max_value=60,
         value=20,
         step=5,
+        help=(
+            "Defines the number of bins used in histograms and in the histogram-based "
+            "distribution comparison for KL and JS divergence."
+        ),
     )
 
     if technique in ["Gaussian Noise", "Laplace Noise"] and not selected_columns:
-        st.warning("Please select at least one numeric column.")
+        st.warning("Please select at least one numeric variable to perturb.")
         st.stop()
     
-    # Adicione isto no final do script para garantir que fica na sidebar
+    # footer com texto informativo do trabalho
     with st.sidebar:
-        st.markdown("---") # Linha divisória após os controlos [cite: 66]
+        st.markdown("---") # Linha divisória após os controlos
         st.markdown(
             """
             <div style="text-align: center; color: #808495; font-size: 0.85em;">
                 <p><strong>VDA Project Dashboard</strong><br>
-                Comparative Evaluation of Privacy Techniques</p>
-                <p>Juliana Jesus & Paulo Silva<br>
-                © 2026 University of Aveiro </p>
+                Comparative Evaluation of Privacy Techniques.</p>
+                <p style="text-align: justify;  padding-left: 1rem; padding-right: 1rem; " >
+                Project developed by <span  style="color: #1f4e79; font-weight: 600;">Juliana Jesus and Paulo Silva</span> for the Visualization and 
+                Data Analysis module, integrated into the Transversal and Transferable Competences II 
+                course unit of the University of Aveiro's third-cycle programme.
+                </p>
             </div>
             """,
             unsafe_allow_html=True
@@ -187,9 +346,13 @@ try:
     # DATA PIPELINE — Aplicar a técnica de preservação de privacidade selecionada
     # ===========================================================================
 
+    bin_size = None
+    data_range = None
+
     if technique == "None":
         df_transformed = df_prepared.copy()
     else:
+        
         df_transformed = apply_privacy_technique(
             df=df_prepared,
             technique=technique,
@@ -213,7 +376,9 @@ try:
         technique=technique,
         sigma=sigma,
         epsilon=epsilon,
-        sampling_rate=sampling_rate
+        sampling_rate=sampling_rate, 
+        bin_size=bin_size,
+        data_range=data_range,
     )
 
     tradeoff_score = compute_tradeoff_score(
@@ -223,6 +388,17 @@ try:
 
     tradeoff_results = []
 
+    # 1. Add current user-selected configuration
+    tradeoff_results.append(
+        {
+            "Technique": f"{technique} (Current)",
+            "Utility Score": utility_score,
+            "Privacy Score": privacy_score,
+            "Trade-off Score": tradeoff_score,
+        }
+    )
+
+    # 2. Define default configurations for comparison
     techniques_to_compare = [
         {
             "name": "Gaussian Noise",
@@ -247,7 +423,12 @@ try:
         },
     ]
 
+    # 3. Add default configurations, excluding the current technique
     for item in techniques_to_compare:
+
+        if item["name"] == technique:
+            continue
+
         df_temp = apply_privacy_technique(
             df=df_prepared,
             technique=item["name"],
@@ -281,7 +462,7 @@ try:
 
         tradeoff_results.append(
             {
-                "Technique": item["name"],
+                "Technique": f'{item["name"]} (Default)',
                 "Utility Score": temp_utility,
                 "Privacy Score": temp_privacy,
                 "Trade-off Score": temp_tradeoff,
@@ -289,6 +470,11 @@ try:
         )
 
     df_tradeoff_comparison = pd.DataFrame(tradeoff_results)
+
+    df_tradeoff_comparison = df_tradeoff_comparison.sort_values(
+        by="Trade-off Score",
+        ascending=False,
+    ).reset_index(drop=True)
 
 
 
@@ -298,11 +484,11 @@ try:
 
     tab_data, tab_transformation, tab_statistics, tab_visual, tab_tradeoff = st.tabs(
         [
-            "Data Preparation",
-            "Transformation",
-            "Statistical Analysis",
-            "Visual Analysis",
-            "Trade-off Evaluation",
+            "Exploratory Inspection",
+            "Privacy-Preserving Transformation",
+            "Statistical Evaluation",
+            "Visual Comparision",
+            "Trade-off Analysis",
         ]
     )
 
@@ -311,7 +497,7 @@ try:
     # ============================================================
 
     with tab_data:
-        st.header("Dataset Preparation")
+      #  st.header("Dataset Preparation")
 
         st.subheader("Original Dataset Preview")
         st.dataframe(df_original.head())
@@ -373,14 +559,47 @@ try:
             key="explore_numeric"
         )
 
+        # fig_hist = px.histogram(
+        #         df_original,
+        #         x=selected_num_col,
+        #         nbins=30,
+        #         title=f"Histogram - {selected_num_col}"
+        # )
+
+        # st.plotly_chart(fig_hist, use_container_width=True)
+
+
+        mean_value = df_original[selected_num_col].mean()
+
         fig_hist = px.histogram(
-                df_original,
-                x=selected_num_col,
-                nbins=30,
-                title=f"Histogram - {selected_num_col}"
+            df_original,
+            x=selected_num_col,
+            nbins=30,
+            title=f"Distribution of {selected_num_col}",
+        )
+
+        fig_hist.add_vline(
+            x=mean_value,
+            line_dash="dash",
+            annotation_text="Mean",
+            annotation_position="top right",
+        )
+
+        fig_hist.update_layout(
+            xaxis_title=selected_num_col,
+            yaxis_title="Count",
+            bargap=0.08,
+            height=450,
+            showlegend=False,
+        )
+
+        fig_hist.update_traces(
+            marker_line_width=1,
+            opacity=0.85,
         )
 
         st.plotly_chart(fig_hist, use_container_width=True)
+
 
         fig_box = px.box(
             df_original,
@@ -405,11 +624,36 @@ try:
 
             category_counts.columns = [selected_cat_col, "count"]
 
+            category_counts["percentage"] = (
+                category_counts["count"] / category_counts["count"].sum() * 100
+            ).round(2)
+
+            category_counts = category_counts.sort_values(
+                by="count",
+                ascending=True
+            )
+
             fig_bar = px.bar(
                 category_counts,
-                x=selected_cat_col,
-                y="count",
+                x="count",
+                y=selected_cat_col,
+                orientation="h",
+                text="percentage",
                 title=f"Category Distribution - {selected_cat_col}"
+            )
+
+            fig_bar.update_traces(
+                texttemplate="%{text}%",
+                textposition="outside",
+                marker_line_width=1,
+                opacity=0.85,
+            )
+
+            fig_bar.update_layout(
+                xaxis_title="Count",
+                yaxis_title=selected_cat_col,
+                height=450,
+                showlegend=False,
             )
 
             st.plotly_chart(fig_bar, use_container_width=True)
@@ -420,7 +664,7 @@ try:
     # ============================================================
 
     with tab_transformation:
-        st.header("Privacy-Preserving Transformation")
+    #    st.header("Privacy-Preserving Transformation")
 
         col1, col2, col3 = st.columns(3)
 
@@ -459,7 +703,50 @@ try:
     # ============================================================
 
     with tab_statistics:
-        st.header("Statistical Comparison")
+        #st.header("Statistical Evaluation")
+
+        # ------------------------------------------------------------
+        # 1. Statistical Properties
+        # ------------------------------------------------------------
+
+        st.subheader("1. Statistical Properties")
+
+        st.caption(
+            """
+            This section evaluates how basic numerical properties changed after
+            applying the selected privacy-preserving technique.
+            It compares measures such as mean, variance, standard deviation,
+            minimum, and maximum.
+            """
+        )
+
+        st.dataframe(comparison["descriptive_statistics"])
+
+        st.divider()
+
+        # ------------------------------------------------------------
+        # 2. Relationship Preservation
+        # ------------------------------------------------------------
+
+        st.subheader("2. Relationship Preservation")
+
+        st.caption(
+            """
+            This section evaluates whether relationships between variables were
+            preserved after transformation. The table shows the difference between
+            the transformed and original correlation matrices.
+            """
+        )
+
+        st.dataframe(comparison["correlation_difference"])
+
+        st.divider()
+
+        # ------------------------------------------------------------
+        # 3. Distribution Similarity
+        # ------------------------------------------------------------
+
+        st.subheader("3. Distribution Similarity")
 
         st.info(
             """
@@ -491,103 +778,121 @@ try:
 
         st.dataframe(most_affected)
 
-        st.subheader("Descriptive Statistics Comparison")
-        st.dataframe(comparison["descriptive_statistics"])
-
         st.subheader("Distribution Similarity Metrics")
-        st.dataframe(comparison["distribution_similarity"])
 
-        st.subheader("Correlation Matrix Difference")
-        st.dataframe(comparison["correlation_difference"])
+        st.dataframe(comparison["distribution_similarity"])
 
     # ============================================================
     # TAB 4 — Análise Visual
     # ============================================================
 
     with tab_visual:
-        st.header("Visual Comparison")
+
+        st.subheader("1. Statistical Properties")
+
+        st.caption(
+            "Visual comparison of distributions to observe changes in central tendency and dispersion."
+        )
 
         col1, col2 = st.columns(2)
 
         with col1:
-            st.subheader("Histogram Comparison")
-
-            fig_hist = plot_histogram_comparison(
-                df_original=df_prepared,
-                df_transformed=df_transformed,
-                column=selected_column,
-                bins=bins,
+            st.write("Histogram Comparison")
+            st.plotly_chart(
+                plot_histogram_comparison(df_prepared, df_transformed, selected_column),
+                use_container_width=True
             )
-
-            st.plotly_chart(fig_hist, use_container_width=True)
 
         with col2:
-            st.subheader("Boxplot Comparison")
-
-            fig_box = plot_boxplot_comparison(
-                df_original=df_prepared,
-                df_transformed=df_transformed,
-                column=selected_column,
+            st.write("Boxplot Comparison")
+            st.plotly_chart(
+                plot_boxplot_comparison(df_prepared, df_transformed, selected_column),
+                use_container_width=True
             )
+        
+        st.subheader("2. Relationship Preservation")
 
-            st.plotly_chart(fig_box, use_container_width=True)
-
-        st.subheader("Scatter Plot Comparison")
+        st.caption(
+            "Visual inspection of relationships between variables after transformation."
+        )
 
         if x_column == y_column:
-            st.warning("Select different variables for the X-axis and Y-axis.")
+            st.warning("Select different variables for X and Y.")
         else:
-            fig_scatter = plot_scatter_comparison(
-                df_original=df_prepared,
-                df_transformed=df_transformed,
-                x_column=x_column,
-                y_column=y_column,
+            st.plotly_chart(
+                plot_scatter_comparison(df_prepared, df_transformed, x_column, y_column),
+                use_container_width=True
             )
 
-            st.plotly_chart(fig_scatter, use_container_width=True)
+        st.subheader("Correlation Heatmap")
 
-        st.subheader("Correlation Difference Heatmap")
-
-        fig_corr = plot_correlation_heatmap(
-            comparison["correlation_difference"],
-            title="Correlation Difference: Transformed - Original",
+        st.plotly_chart(
+            plot_correlation_heatmap(
+                comparison["correlation_difference"],
+                "Correlation Difference (Transformed - Original)"
+            ),
+            use_container_width=True
         )
 
-        st.plotly_chart(fig_corr, use_container_width=True)
+        st.subheader("3. Distribution Similarity")
 
-        st.subheader("Distribution Similarity - JS Divergence")
-
-        fig_js = plot_metric_bar_chart(
-            comparison["distribution_similarity"],
-            metric_column="js_divergence",
+        st.caption(
+            "Visual comparison of distribution changes using overlay histograms and divergence metrics."
         )
 
-        st.plotly_chart(fig_js, use_container_width=True)
-
-        st.subheader("Distribution Similarity - KL Divergence")
-
-        fig_kl = plot_metric_bar_chart(
-            comparison["distribution_similarity"],
-            metric_column="kl_divergence",
+        st.plotly_chart(
+            plot_histogram_comparison(
+                df_prepared,
+                df_transformed,
+                selected_column
+            ),
+            use_container_width=True,
+            key="distribution_similarity_histogram"
         )
 
-        st.plotly_chart(fig_kl, use_container_width=True)
+        st.subheader("JS Divergence")
+
+        st.plotly_chart(
+            plot_metric_bar_chart(
+                comparison["distribution_similarity"],
+                "js_divergence"
+            ),
+            use_container_width=True,
+            key="distribution_similarity_js"
+        )
+
+        st.subheader("KL Divergence")
+
+        st.plotly_chart(
+            plot_metric_bar_chart(
+                comparison["distribution_similarity"],
+                "kl_divergence"
+            ),
+            use_container_width=True,
+            key="distribution_similarity_kl"
+        )
+
+
+    
 
     # ============================================================
     # TAB 5 — Avaliação do Trade-off
     # ============================================================
 
     with tab_tradeoff:
-        st.header("Privacy-Utility Trade-off Evaluation")
-
         st.info(
             """
             This section evaluates the balance between privacy protection and data utility.
 
-            Utility is estimated from distribution similarity using JS divergence.
+            Utility measures how well the original data characteristics are preserved and is estimated from distribution similarity using JS divergence.
+
             Privacy is estimated from the intensity of the selected transformation.
+
+            The trade-off score combines utility and privacy to indicate the overall effectiveness of the selected configuration.
             """
         )
+
+        st.subheader("1. Current Configuration")
 
         col1, col2, col3 = st.columns(3)
 
@@ -609,18 +914,32 @@ try:
             }
         ])
 
-        st.subheader("Current Configuration")
         st.dataframe(df_tradeoff)
 
-        st.subheader("Privacy-Utility Plot")
-        fig_tradeoff = plot_tradeoff_comparison(df_tradeoff)
-        st.plotly_chart(fig_tradeoff, use_container_width=True)
+        st.subheader("2. Current Privacy-Utility Plot")
 
-        st.subheader("Comparison Across Techniques")
+        fig_tradeoff = plot_tradeoff_comparison(df_tradeoff)
+
+        st.plotly_chart(
+            fig_tradeoff,
+            use_container_width=True,
+            key="current_tradeoff_plot",
+        )
+
+        st.divider()
+
+        st.subheader("3. Comparison Across Techniques")
+
+        st.caption(
+            """
+            This comparison evaluates multiple privacy-preserving techniques using a fixed default configuration.
+            It supports the identification of techniques that provide a better balance between privacy and utility.
+            """
+        )
 
         st.dataframe(df_tradeoff_comparison)
 
-        st.subheader("Privacy-Utility Comparison Plot")
+        st.subheader("4. Privacy-Utility Comparison Plot")
 
         fig_tradeoff_comparison = plot_tradeoff_comparison(
             df_tradeoff_comparison
@@ -629,6 +948,31 @@ try:
         st.plotly_chart(
             fig_tradeoff_comparison,
             use_container_width=True,
+            key="technique_tradeoff_comparison_plot",
+        )
+
+        st.subheader("Trade-off Ranking")
+
+        fig_bar = px.bar(
+            df_tradeoff_comparison.sort_values(
+                by="Trade-off Score", ascending=True
+            ),
+            x="Trade-off Score",
+            y="Technique",
+            orientation="h",
+            title="Technique Ranking by Trade-off Score"
+        )
+
+        st.plotly_chart(fig_bar, use_container_width=True)
+
+        st.subheader("Privacy vs Utility (Side-by-Side)")
+
+        fig_dual = plot_privacy_utility_dual_bar(df_tradeoff_comparison)
+
+        st.plotly_chart(
+            fig_dual,
+            use_container_width=True,
+            key="dual_bar_chart"
         )
 
     
