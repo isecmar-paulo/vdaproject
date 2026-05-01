@@ -328,11 +328,11 @@ try:
         st.markdown(
             """
             <div style="text-align: center; color: #808495; font-size: 0.85em;">
-                <p><strong>VDA Project Dashboard</strong><br>
-                Comparative Evaluation of Privacy Techniques.</p>
+                <p><strong>VDA Dashboard</strong><br>
+                Comparative Evaluation of Privacy Techniques. 
+                developed by <br><span  style="color: #1f4e79; font-weight: 600;">Juliana Jesus and Paulo Silva</span></p>
                 <p style="text-align: justify;  padding-left: 1rem; padding-right: 1rem; " >
-                Project developed by <span  style="color: #1f4e79; font-weight: 600;">Juliana Jesus and Paulo Silva</span> for the Visualization and 
-                Data Analysis module, integrated into the Transversal and Transferable Competences II 
+                Project for Visualization and Data Analysis module, integrated into the Transversal and Transferable Competences II 
                 course unit of the University of Aveiro's third-cycle programme.
                 </p>
             </div>
@@ -346,9 +346,7 @@ try:
     # DATA PIPELINE — Aplicar a técnica de preservação de privacidade selecionada
     # ===========================================================================
 
-    bin_size = None
-    data_range = None
-
+    
     if technique == "None":
         df_transformed = df_prepared.copy()
     else:
@@ -360,6 +358,7 @@ try:
             sigma=sigma,
             sampling_rate=sampling_rate,
             epsilon=epsilon,
+            bin_size=bin_size,
         )
 
     comparison = compare_datasets(
