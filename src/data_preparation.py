@@ -28,8 +28,11 @@ def exploratory_inspection(df: pd.DataFrame) -> dict:
             columns={"index": "column", 0: "missing_values"}
         ),
         "numeric_statistics": df[numeric_columns].describe(),
-        "categorical_statistics": df[categorical_columns].describe()
-        if len(categorical_columns) > 0 else pd.DataFrame(),
+        "categorical_statistics": (
+            df[categorical_columns].describe().astype(str)
+            if len(categorical_columns) > 0
+            else pd.DataFrame()
+        ),
     }
 
     return inspection
@@ -80,7 +83,7 @@ def encode_categorical_variables(df: pd.DataFrame) -> pd.DataFrame:
     df_encoded = pd.get_dummies(
         df,
         columns=categorical_columns,
-        drop_first=True
+        drop_first=False
     )
 
     return df_encoded
