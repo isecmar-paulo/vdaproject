@@ -2,7 +2,6 @@ import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
 
-
 def plot_histogram_comparison(
     df_original: pd.DataFrame,
     df_transformed: pd.DataFrame,
@@ -157,7 +156,7 @@ def plot_tradeoff(utility: float, privacy: float):
 
     return fig
 
-import plotly.express as px
+
 
 
 def plot_tradeoff_comparison(df_tradeoff):
@@ -227,6 +226,85 @@ def plot_privacy_utility_dual_bar(df_tradeoff):
     fig.update_layout(
         yaxis=dict(range=[0, 1], title="Score"),
         xaxis_title="Technique",
+    )
+
+    return fig
+
+
+def plot_parameter_sweep_tradeoff(df_sweep):
+    """
+    Plot Privacy vs Utility for all parameter configurations.
+    """
+
+    fig = px.scatter(
+        df_sweep,
+        x="Privacy Score",
+        y="Utility Score",
+        color="Technique",
+        size="Trade-off Score",
+        hover_data=["Parameter", "Parameter Value", "Trade-off Score"],
+        title="Parameter Sweep: Privacy vs Utility",
+    )
+
+    fig.update_layout(
+        xaxis=dict(range=[0, 1], title="Privacy Score"),
+        yaxis=dict(range=[0, 1], title="Utility Score"),
+        height=500,
+    )
+
+    return fig
+
+
+def plot_parameter_sweep_ranking(df_sweep):
+    """
+    Plot the best configurations ranked by trade-off score.
+    """
+
+    top_results = df_sweep.head(10).copy()
+
+    top_results["Configuration"] = (
+        top_results["Technique"]
+        + " | "
+        + top_results["Parameter"]
+        + "="
+        + top_results["Parameter Value"].astype(str)
+    )
+
+    fig = px.bar(
+        top_results.sort_values("Trade-off Score", ascending=True),
+        x="Trade-off Score",
+        y="Configuration",
+        orientation="h",
+        title="Top Configurations by Trade-off Score",
+    )
+
+    fig.update_layout(
+        xaxis=dict(range=[0, 1], title="Trade-off Score"),
+        yaxis_title="Configuration",
+        height=500,
+    )
+
+    return fig
+
+
+def plot_parameter_sweep_lines(df_sweep):
+    """
+    Plot trade-off score as a function of parameter value for each technique.
+    """
+
+    fig = px.line(
+        df_sweep,
+        x="Parameter Value",
+        y="Trade-off Score",
+        color="Technique",
+        markers=True,
+        title="Trade-off Score vs Parameter Value",
+    )
+
+    fig.update_layout(
+        xaxis_title="Parameter Value",
+        yaxis_title="Trade-off Score",
+        height=500,
     )
 
     return fig
