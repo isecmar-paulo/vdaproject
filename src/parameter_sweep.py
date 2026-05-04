@@ -55,8 +55,6 @@ def evaluate_configuration(
         sigma=sigma,
         epsilon=epsilon,
         sampling_rate=sampling_rate,
-        bin_size=bin_size,
-        data_range=data_range,
     )
 
     tradeoff_score = compute_tradeoff_score(

@@ -2,6 +2,22 @@ import numpy as np
 import pandas as pd
 
 
+
+# def generalize_numeric_column(df, column, bin_size):
+#     df_generalized = df.copy()
+
+#     if column not in df_generalized.columns:
+#         raise ValueError(f"Column '{column}' not found in dataset.")
+
+#     if bin_size is None or bin_size <= 0:
+#         raise ValueError("bin_size must be greater than 0.")
+
+#     df_generalized[column] = (
+#         df_generalized[column] // bin_size
+#     ) * bin_size
+
+#     return df_generalized
+
 def generalize_numeric_column(df, column, bin_size):
     df_generalized = df.copy()
 
@@ -14,6 +30,29 @@ def generalize_numeric_column(df, column, bin_size):
     df_generalized[column] = (
         df_generalized[column] // bin_size
     ) * bin_size
+
+    return df_generalized
+
+
+def generalize_region(df, region_column="region"):
+    df_generalized = df.copy()
+
+    if region_column not in df_generalized.columns:
+        raise ValueError(f"Column '{region_column}' not found in dataset.")
+
+    region_mapping = {
+        "northeast": "north",
+        "northwest": "north",
+        "southeast": "south",
+        "southwest": "south",
+    }
+
+    df_generalized[region_column] = (
+        df_generalized[region_column]
+        .astype(str)
+        .str.lower()
+        .map(region_mapping)
+    )
 
     return df_generalized
 

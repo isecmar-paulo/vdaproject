@@ -12,8 +12,7 @@ def render_sidebar(df_prepared, numeric_columns):
         "Privacy-preserving technique",
         [
             "None",
-            "Generalization - Age",
-            "Generalization - BMI",
+            "Generalization",
             "Gaussian Noise",
             "Sampling",
             "Laplace Noise",
@@ -25,34 +24,74 @@ def render_sidebar(df_prepared, numeric_columns):
     epsilon = 1.0
     sampling_rate = 0.8
     selected_columns = []
-    bin_size = None
-    data_range = None
+    generalized_attributes = []
+    age_bin_size = None
+    bmi_bin_size = None
+    age_range = None
+    bmi_range = None
 
-    if technique == "Generalization - Age":
-        col = "age"
-        data_range = df_prepared[col].max() - df_prepared[col].min()
 
-        bin_size = st.sidebar.slider(
-            "Age generalization interval",
-            min_value=1,
-            max_value=int(data_range),
-            value=10,
-            step=1,
-            help="Larger age intervals increase privacy but reduce data precision.",
+
+    # if technique == "Generalization - Age":
+    #     col = "age"
+    #     data_range = df_prepared[col].max() - df_prepared[col].min()
+
+    #     bin_size = st.sidebar.slider(
+    #         "Age generalization interval",
+    #         min_value=1,
+    #         max_value=int(data_range),
+    #         value=10,
+    #         step=1,
+    #         help="Larger age intervals increase privacy but reduce data precision.",
+    #     )
+
+    # elif technique == "Generalization - BMI":
+    #     col = "bmi"
+    #     data_range = df_prepared[col].max() - df_prepared[col].min()
+
+    #     bin_size = st.sidebar.slider(
+    #         "BMI generalization interval",
+    #         min_value=0.5,
+    #         max_value=float(data_range),
+    #         value=2.0,
+    #         step=0.5,
+    #         help="Larger BMI intervals increase privacy but reduce detail.",
+    #     )
+
+    if technique == "Generalization":
+        generalized_attributes = st.sidebar.multiselect(
+            "Attributes to generalize",
+            ["age", "bmi", "region"],
+            default=["age"],
+            help="Select one or more attributes to generalize."
         )
 
-    elif technique == "Generalization - BMI":
-        col = "bmi"
-        data_range = df_prepared[col].max() - df_prepared[col].min()
+        if "age" in generalized_attributes:
+            age_range = df_prepared["age"].max() - df_prepared["age"].min()
 
-        bin_size = st.sidebar.slider(
-            "BMI generalization interval",
-            min_value=0.5,
-            max_value=float(data_range),
-            value=2.0,
-            step=0.5,
-            help="Larger BMI intervals increase privacy but reduce detail.",
-        )
+            age_bin_size = st.sidebar.slider(
+                "Age generalization interval",
+                min_value=1,
+                max_value=int(age_range),
+                value=10,
+                step=1,
+            )
+
+        if "bmi" in generalized_attributes:
+            bmi_range = df_prepared["bmi"].max() - df_prepared["bmi"].min()
+
+            bmi_bin_size = st.sidebar.slider(
+                "BMI generalization interval",
+                min_value=0.5,
+                max_value=float(bmi_range),
+                value=2.0,
+                step=0.5,
+            )
+
+        if "region" in generalized_attributes:
+            st.sidebar.caption(
+                "Region will be generalized from four categories into two broader groups: north and south."
+            )
 
     elif technique == "Gaussian Noise":
         sigma = st.sidebar.slider(
@@ -141,12 +180,15 @@ def render_sidebar(df_prepared, numeric_columns):
         "epsilon": epsilon,
         "sampling_rate": sampling_rate,
         "selected_columns": selected_columns,
-        "bin_size": bin_size,
-        "data_range": data_range,
+        "generalized_attributes": generalized_attributes,
+        "age_bin_size": age_bin_size,
+        "bmi_bin_size": bmi_bin_size,
+        "age_range": age_range,
+        "bmi_range": bmi_range,
+        "bins": bins,
         "selected_column": selected_column,
         "x_column": x_column,
         "y_column": y_column,
-        "bins": bins,
     }
 
 

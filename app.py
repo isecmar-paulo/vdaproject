@@ -19,7 +19,6 @@ from src.pipeline import (
     load_and_prepare_data
 ) 
 
-
 DATA_PATH = "data/medicalData.csv"
 
 # ------------------------------------------------------------
@@ -59,7 +58,6 @@ def main():
         validation = data["validation"]
         numeric_columns = data["numeric_columns"]    
         
-
         sidebar = render_sidebar(df_prepared, numeric_columns)
 
 
@@ -69,6 +67,7 @@ def main():
 
 
         df_transformed = apply_selected_transformation(
+            df_original=df_original,
             df_prepared=df_prepared,
             sidebar=sidebar,
         )
@@ -85,7 +84,6 @@ def main():
             sidebar=sidebar,
             evaluation=evaluation,
         )
-
 
 
         # ============================================================
