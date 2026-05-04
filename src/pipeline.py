@@ -1,7 +1,13 @@
 import streamlit as st
 import pandas as pd
 
-from src.privacy_methods import apply_privacy_technique
+from src.data_preparation import preprocess_dataset
+from src.privacy_methods import (
+    apply_privacy_technique,
+    generalize_numeric_column,
+    generalize_region,
+)
+
 
 from src.statistical_analysis import (
     compare_datasets,
@@ -17,7 +23,6 @@ from src.data_preparation import (
     validate_prepared_dataset,
 )
 
-from src.privacy_methods import apply_privacy_technique
 
 
 def load_and_prepare_data(data_path: str):
@@ -69,31 +74,29 @@ def load_and_prepare_data(data_path: str):
         "validation": validation,
         "numeric_columns": numeric_columns,
     }
-      
 
-def apply_selected_transformation(df_prepared, sidebar):
-    """
-    Apply the selected privacy-preserving technique based on sidebar configuration.
-    """
 
+
+def apply_selected_transformation(df_original, df_prepared, sidebar):
     technique = sidebar["technique"]
 
-    # Caso sem transformação
     if technique == "None":
         return df_prepared.copy()
 
-    # Aplicar técnica com parâmetros do sidebar
-    df_transformed = apply_privacy_technique(
+    if technique == "Generalization":
+        return apply_generalization(
+            df_original=df_original,
+            sidebar=sidebar,
+        )
+
+    return apply_privacy_technique(
         df=df_prepared,
         technique=technique,
         columns=sidebar["selected_columns"],
         sigma=sidebar["sigma"],
         sampling_rate=sidebar["sampling_rate"],
         epsilon=sidebar["epsilon"],
-        bin_size=sidebar["bin_size"],
     )
-
-    return df_transformed
 
 
 def compute_evaluation_results(df_prepared, df_transformed, sidebar):
@@ -125,8 +128,11 @@ def compute_evaluation_results(df_prepared, df_transformed, sidebar):
         sigma=sidebar["sigma"],
         epsilon=sidebar["epsilon"],
         sampling_rate=sidebar["sampling_rate"],
-        bin_size=sidebar["bin_size"],
-        data_range=sidebar["data_range"],
+        generalized_attributes=sidebar["generalized_attributes"],
+        age_bin_size=sidebar["age_bin_size"],
+        bmi_bin_size=sidebar["bmi_bin_size"],
+        age_range=sidebar["age_range"],
+        bmi_range=sidebar["bmi_range"],
     )
 
     # ------------------------------------------------------------
@@ -240,8 +246,7 @@ def build_tradeoff_comparison(
             sigma=item["sigma"],
             epsilon=item["epsilon"],
             sampling_rate=item["sampling_rate"],
-            bin_size=item["bin_size"],
-            data_range=item["data_range"],
+            
         )
 
         temp_tradeoff = compute_tradeoff_score(
@@ -264,3 +269,26 @@ def build_tradeoff_comparison(
         by="Trade-off Score",
         ascending=False,
     ).reset_index(drop=True)
+
+
+def apply_generalization(df_original, sidebar):
+    df_generalized = df_original.copy()
+
+    if "age" in sidebar["generalized_attributes"]:
+        df_generalized = generalize_numeric_column(
+            df=df_generalized,
+            column="age",
+            bin_size=sidebar["age_bin_size"],
+        )
+
+    if "bmi" in sidebar["generalized_attributes"]:
+        df_generalized = generalize_numeric_column(
+            df=df_generalized,
+            column="bmi",
+            bin_size=sidebar["bmi_bin_size"],
+        )
+
+    if "region" in sidebar["generalized_attributes"]:
+        df_generalized = generalize_region(df_generalized)
+
+    return preprocess_dataset(df_generalized)

@@ -189,19 +189,42 @@ def compare_distribution_similarity(
     return pd.DataFrame(results)
 
 
+# def compare_datasets(
+#     df_original: pd.DataFrame,
+#     df_transformed: pd.DataFrame,
+#     bins: int = 20
+# ) -> dict:
+#     """
+#     Compare original and transformed datasets using statistical metrics.
+#     """
+#     return {
+#         "descriptive_statistics": compare_descriptive_statistics(
+#             df_original,
+#             df_transformed
+#         ),
+#         "correlation_difference": compare_correlation_matrices(
+#             df_original,
+#             df_transformed
+#         ),
+#         "distribution_similarity": compare_distribution_similarity(
+#             df_original,
+#             df_transformed,
+#             bins
+#         )
+#     }
+
 def compare_datasets(
     df_original: pd.DataFrame,
     df_transformed: pd.DataFrame,
     bins: int = 20
 ) -> dict:
-    """
-    Compare original and transformed datasets using statistical metrics.
-    """
     return {
         "descriptive_statistics": compare_descriptive_statistics(
             df_original,
             df_transformed
         ),
+        "original_correlation": compute_correlation_matrix(df_original),
+        "transformed_correlation": compute_correlation_matrix(df_transformed),
         "correlation_difference": compare_correlation_matrices(
             df_original,
             df_transformed
@@ -212,6 +235,7 @@ def compare_datasets(
             bins
         )
     }
+
 
 def compute_utility_score(distribution_df: pd.DataFrame) -> float:
     """
@@ -229,24 +253,32 @@ def compute_privacy_score(
     sigma=1.0,
     epsilon=1.0,
     sampling_rate=0.8,
-    bin_size=None,
-    data_range=None,
-   
+    generalized_attributes=None,
+    age_bin_size=None,
+    bmi_bin_size=None,
+    age_range=None,
+    bmi_range=None,
 ):
+    if generalized_attributes is None:
+        generalized_attributes = []
+
     if technique == "Gaussian Noise":
-        return sigma / (sigma + 1)
+        return float(sigma / (sigma + 1))
 
     if technique == "Laplace Noise":
-        return 1 / (1 + epsilon)
+        return float(1 / (1 + epsilon))
 
     if technique == "Sampling":
-        return 1 - sampling_rate
+        return float(1 - sampling_rate)
 
-    if technique in ["Generalization - Age", "Generalization - BMI"]:
-        if bin_size is None or data_range is None or data_range <= 0:
-            return 0.0
-
-        return float(min(1.0, bin_size / data_range))
+    if technique == "Generalization":
+        return compute_generalization_privacy_score(
+            generalized_attributes=generalized_attributes,
+            age_bin_size=age_bin_size,
+            bmi_bin_size=bmi_bin_size,
+            age_range=age_range,
+            bmi_range=bmi_range,
+        )
 
     return 0.0
 
@@ -289,3 +321,26 @@ def compute_tradeoff_score(utility: float, privacy: float) -> float:
     privacy or utility is low.
     """
     return float((utility * privacy) ** 0.5)
+
+def compute_generalization_privacy_score(
+    generalized_attributes,
+    age_bin_size=None,
+    bmi_bin_size=None,
+    age_range=None,
+    bmi_range=None,
+):
+    scores = []
+
+    if "age" in generalized_attributes and age_bin_size is not None and age_range:
+        scores.append(min(1.0, age_bin_size / age_range))
+
+    if "bmi" in generalized_attributes and bmi_bin_size is not None and bmi_range:
+        scores.append(min(1.0, bmi_bin_size / bmi_range))
+
+    if "region" in generalized_attributes:
+        scores.append(0.5)
+
+    if not scores:
+        return 0.0
+
+    return float(sum(scores) / len(scores))

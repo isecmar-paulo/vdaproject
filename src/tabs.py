@@ -3,12 +3,14 @@ import plotly.express as px
 import streamlit as st
 
 from src.visualizations import (
+    plot_density_comparison,
     plot_histogram_comparison,
     plot_boxplot_comparison,
     plot_privacy_utility_dual_bar,
     plot_scatter_comparison,
     plot_correlation_heatmap,
     plot_metric_bar_chart,
+    plot_top_correlation_changes,
     plot_tradeoff_comparison,
 )
 
@@ -18,6 +20,9 @@ from src.visualizations import (
     plot_parameter_sweep_tradeoff,
     plot_parameter_sweep_ranking,
     plot_parameter_sweep_lines,
+    plot_density_comparison,
+    plot_correlation_matrix_comparison,
+    plot_correlation_scatter,
 )
 
 def render_exploratory_tab(data):
@@ -209,10 +214,22 @@ def render_transformation_tab(df_prepared, df_transformed, sidebar):
 
     elif technique == "Sampling":
         st.write("Sampling rate:", sidebar["sampling_rate"])
+    
+    elif technique == "Generalization":
+      st.write("Generalized attributes:", sidebar["generalized_attributes"])
 
-    elif technique in ["Generalization - Age", "Generalization - BMI"]:
-        st.write("Generalization interval:", sidebar["bin_size"])
-        st.write("Data range:", sidebar["data_range"])
+      if "age" in sidebar["generalized_attributes"]:
+          st.write("Age interval:", sidebar["age_bin_size"])
+
+      if "bmi" in sidebar["generalized_attributes"]:
+          st.write("BMI interval:", sidebar["bmi_bin_size"])
+
+      if "region" in sidebar["generalized_attributes"]:
+          st.write("Region hierarchy: northeast/northwest → north; southeast/southwest → south")
+
+    # elif technique in ["Generalization - Age", "Generalization - BMI"]:
+    #     st.write("Generalization interval:", sidebar["bin_size"])
+    #     st.write("Data range:", sidebar["data_range"])
 
     st.subheader("Transformed Dataset Preview")
     st.dataframe(df_transformed.head())
@@ -227,6 +244,8 @@ def render_transformation_tab(df_prepared, df_transformed, sidebar):
 def render_statistical_tab(evaluation):
     comparison = evaluation["comparison"]
     utility_score = evaluation["utility_score"]
+
+    #technique = sidebar["technique"]
 
     st.subheader("1. Statistical Properties")
 
@@ -295,10 +314,17 @@ def render_statistical_tab(evaluation):
 
 def render_visual_tab(df_prepared, df_transformed, sidebar, evaluation):
     comparison = evaluation["comparison"]
-
+    technique = sidebar["technique"]
+    
     selected_column = sidebar["selected_column"]
     x_column = sidebar["x_column"]
     y_column = sidebar["y_column"]
+
+    
+    st.metric("Selected Technique", technique)
+
+    
+    
 
     st.subheader("1. Statistical Properties")
 
@@ -332,6 +358,40 @@ def render_visual_tab(df_prepared, df_transformed, sidebar, evaluation):
             key="visual_statistical_boxplot",
         )
 
+    # st.subheader("2. Relationship Preservation")
+
+    # st.caption(
+    #     "Visual inspection of relationships between variables after transformation."
+    # )
+
+    # if x_column == y_column:
+    #     st.warning("Select different variables for X and Y.")
+    # else:
+    #     fig_original_density, fig_transformed_density = plot_density_comparison(
+    #         df_prepared,
+    #         df_transformed,
+    #         x_column,
+    #         y_column,
+    #     )
+
+    #     col1, col2 = st.columns(2)
+
+    #     with col1:
+    #         st.write("Original Data Density")
+    #         st.plotly_chart(
+    #             fig_original_density,
+    #             use_container_width=True,
+    #             key="visual_original_density",
+    #         )
+
+    #     with col2:
+    #         st.write("Transformed Data Density")
+    #         st.plotly_chart(
+    #             fig_transformed_density,
+    #             use_container_width=True,
+    #             key="visual_transformed_density",
+    #         )
+    
     st.subheader("2. Relationship Preservation")
 
     st.caption(
@@ -341,18 +401,91 @@ def render_visual_tab(df_prepared, df_transformed, sidebar, evaluation):
     if x_column == y_column:
         st.warning("Select different variables for X and Y.")
     else:
-        st.plotly_chart(
-            plot_scatter_comparison(
-                df_prepared,
-                df_transformed,
-                x_column,
-                y_column,
-            ),
-            use_container_width=True,
-            key="visual_relationship_scatter",
+        fig_original_density, fig_transformed_density = plot_density_comparison(
+            df_prepared,
+            df_transformed,
+            x_column,
+            y_column,
         )
 
-    st.subheader("Correlation Heatmap")
+        col1, col2 = st.columns(2)
+
+        with col1:
+            st.write("Original Density Heatmap")
+            st.plotly_chart(
+                fig_original_density,
+                use_container_width=True,
+                key="visual_original_density2",
+            )
+
+        with col2:
+            st.write("Transformed Density Heatmap")
+            st.plotly_chart(
+                fig_transformed_density,
+                use_container_width=True,
+                key="visual_transformed_density2",
+            )
+
+    st.subheader("Correlation Matrix Comparison")
+
+    fig_original_corr, fig_transformed_corr = plot_correlation_matrix_comparison(
+        comparison["original_correlation"],
+        comparison["transformed_correlation"],
+    )
+
+    col1, col2 = st.columns(2)
+
+    with col1:
+        st.plotly_chart(
+            fig_original_corr,
+            use_container_width=True,
+            key="visual_original_correlation2",
+        )
+
+    with col2:
+        st.plotly_chart(
+            fig_transformed_corr,
+            use_container_width=True,
+            key="visual_transformed_correlation2",
+        )
+
+    st.subheader("Correlation Difference Heatmap")
+
+    st.plotly_chart(
+        plot_correlation_heatmap(
+            comparison["correlation_difference"],
+            "Correlation Difference (Transformed - Original)",
+        ),
+        width='stretch',
+        key="visual_correlation_heatmap",
+    )
+
+    st.subheader("Pairwise Correlation Preservation")
+
+    st.caption(
+        "Each point represents a pairwise correlation. Points close to the dashed diagonal indicate better preservation of relationships."
+    )
+
+    st.plotly_chart(
+        plot_correlation_scatter(
+            comparison["original_correlation"],
+            comparison["transformed_correlation"],
+        ),
+        width='stretch',
+        key="visual_correlation_scatter2",
+    )
+
+    st.plotly_chart(
+        plot_top_correlation_changes(
+            comparison["original_correlation"],
+            comparison["transformed_correlation"],
+        ),
+        width='stretch',
+        key="visual_topcorrelation",
+    )
+
+
+    st.subheader("Correlation Difference Heatmap")
 
     st.plotly_chart(
         plot_correlation_heatmap(
@@ -360,7 +493,7 @@ def render_visual_tab(df_prepared, df_transformed, sidebar, evaluation):
             "Correlation Difference (Transformed - Original)",
         ),
         use_container_width=True,
-        key="visual_correlation_heatmap",
+        key="visual_correlation_heatmap2",
     )
 
     st.subheader("3. Distribution Similarity")
@@ -525,8 +658,6 @@ def render_tradeoff_tab(sidebar, evaluation, df_tradeoff_comparison, df_prepared
         "Gaussian Noise",
         "Laplace Noise",
         "Sampling",
-        "Generalization - Age",
-        "Generalization - BMI",
     ]
 
     selected_sweep_techniques = st.multiselect(
