@@ -2,22 +2,6 @@ import numpy as np
 import pandas as pd
 
 
-
-# def generalize_numeric_column(df, column, bin_size):
-#     df_generalized = df.copy()
-
-#     if column not in df_generalized.columns:
-#         raise ValueError(f"Column '{column}' not found in dataset.")
-
-#     if bin_size is None or bin_size <= 0:
-#         raise ValueError("bin_size must be greater than 0.")
-
-#     df_generalized[column] = (
-#         df_generalized[column] // bin_size
-#     ) * bin_size
-
-#     return df_generalized
-
 def generalize_numeric_column(df, column, bin_size):
     df_generalized = df.copy()
 

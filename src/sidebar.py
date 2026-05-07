@@ -29,7 +29,8 @@ def render_sidebar(df_prepared, numeric_columns):
     bmi_bin_size = None
     age_range = None
     bmi_range = None
-
+    charges_bin_size = None
+    charges_range = None
 
 
     # if technique == "Generalization - Age":
@@ -61,7 +62,7 @@ def render_sidebar(df_prepared, numeric_columns):
     if technique == "Generalization":
         generalized_attributes = st.sidebar.multiselect(
             "Attributes to generalize",
-            ["age", "bmi", "region"],
+            ["age", "bmi", "region", "charges"],
             default=["age"],
             help="Select one or more attributes to generalize."
         )
@@ -87,6 +88,22 @@ def render_sidebar(df_prepared, numeric_columns):
                 value=2.0,
                 step=0.5,
             )
+        
+        if "charges" in generalized_attributes:
+            charges_range = df_prepared["charges"].max() - df_prepared["charges"].min()
+
+            charges_bin_size = st.sidebar.slider(
+                "Charges generalization interval",
+                min_value=100.0,
+                max_value=float(charges_range),
+                value=5000.0,
+                step=100.0,
+                help=(
+                    "Defines the interval size used to generalize medical charges. "
+                    "Larger intervals increase privacy but reduce precision."
+                ),
+            )
+
 
         if "region" in generalized_attributes:
             st.sidebar.caption(
@@ -183,6 +200,8 @@ def render_sidebar(df_prepared, numeric_columns):
         "generalized_attributes": generalized_attributes,
         "age_bin_size": age_bin_size,
         "bmi_bin_size": bmi_bin_size,
+        "charges_bin_size": charges_bin_size,
+        "charges_range": charges_range,
         "age_range": age_range,
         "bmi_range": bmi_range,
         "bins": bins,
