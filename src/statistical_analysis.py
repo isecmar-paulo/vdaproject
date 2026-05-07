@@ -281,7 +281,7 @@ def compute_privacy_score(
             age_range=age_range,
             bmi_range=bmi_range,
             charges_bin_size=charges_bin_size, 
-             charges_range=charges_range
+            charges_range=charges_range
         )
 
     return 0.0
@@ -343,10 +343,8 @@ def compute_generalization_privacy_score(
     if "bmi" in generalized_attributes and bmi_bin_size is not None and bmi_range:
         scores.append(min(1.0, bmi_bin_size / bmi_range))
 
-    if "charges" in generalized_attributes and charges_bin_size is not None and charges_range:
-        scores.append(
-            min(1.0, charges_bin_size / charges_range)
-    )
+    if "charges" in generalized_attributes and charges_bin_size is not None and charges_range > 0:
+        scores.append(min(1.0, charges_bin_size / charges_range))
             
 
     if "region" in generalized_attributes:

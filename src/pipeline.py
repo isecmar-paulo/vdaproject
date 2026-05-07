@@ -133,6 +133,8 @@ def compute_evaluation_results(df_prepared, df_transformed, sidebar):
         bmi_bin_size=sidebar["bmi_bin_size"],
         age_range=sidebar["age_range"],
         bmi_range=sidebar["bmi_range"],
+        charges_bin_size=sidebar["charges_bin_size"],
+        charges_range=sidebar["charges_range"],
     )
 
     # ------------------------------------------------------------
