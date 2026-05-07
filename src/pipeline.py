@@ -291,4 +291,11 @@ def apply_generalization(df_original, sidebar):
     if "region" in sidebar["generalized_attributes"]:
         df_generalized = generalize_region(df_generalized)
 
+    if "charges" in sidebar["generalized_attributes"]:
+        df_generalized = generalize_numeric_column(
+            df=df_generalized,
+            column="charges",
+            bin_size=sidebar["charges_bin_size"],
+        )
+
     return preprocess_dataset(df_generalized)

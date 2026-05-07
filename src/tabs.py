@@ -322,8 +322,6 @@ def render_visual_tab(df_prepared, df_transformed, sidebar, evaluation):
 
     
     st.metric("Selected Technique", technique)
-
-    
     
 
     st.subheader("1. Statistical Properties")
@@ -335,7 +333,7 @@ def render_visual_tab(df_prepared, df_transformed, sidebar, evaluation):
     col1, col2 = st.columns(2)
 
     with col1:
-        st.write("Histogram Comparison")
+        st.write("Histogram Comparison")        
         st.plotly_chart(
             plot_histogram_comparison(
                 df_prepared,
@@ -345,6 +343,24 @@ def render_visual_tab(df_prepared, df_transformed, sidebar, evaluation):
             use_container_width=True,
             key="visual_statistical_histogram",
         )
+        with st.expander("What does 'Density' mean?"):
+            st.markdown(
+                """
+                **Probability Density Interpretation**
+
+                In this histogram, the Y-axis does not represent the number of observations.
+
+                Instead, it represents *probability density*, which indicates how concentrated the data is in each region.
+
+                - Higher bars → higher concentration of values
+                - Lower bars → fewer values
+                - Total area under the histogram = 1
+
+                The probability of observing values within a given interval is approximated by:
+
+                **probability ≈ density × bin width**                
+                """
+            )
 
     with col2:
         st.write("Boxplot Comparison")
