@@ -66,17 +66,21 @@ def main():
         # ===========================================================================
 
 
-        df_transformed = apply_selected_transformation(
+      
+        df_transformed_raw, df_transformed = apply_selected_transformation(
             df_original=df_original,
             df_prepared=df_prepared,
             sidebar=sidebar,
         )
 
         evaluation = compute_evaluation_results(
+            df_original=df_original,
             df_prepared=df_prepared,
+            df_transformed_raw=df_transformed_raw,
             df_transformed=df_transformed,
             sidebar=sidebar,
         )
+
 
         df_tradeoff_comparison = build_tradeoff_comparison(
             df_prepared=df_prepared,
@@ -125,7 +129,10 @@ def main():
 
         
         with tab_statistics:
-            render_statistical_tab(evaluation)    
+            render_statistical_tab(
+                evaluation=evaluation,
+                sidebar=sidebar,
+            )
 
         # ============================================================
         # TAB 4 — Análise Visual
