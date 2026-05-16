@@ -227,6 +227,9 @@ def render_transformation_tab(df_prepared, df_transformed, sidebar):
       if "region" in sidebar["generalized_attributes"]:
           st.write("Region hierarchy: northeast/northwest → north; southeast/southwest → south")
 
+      if "children" in sidebar["generalized_attributes"]:
+        st.write("Children interval:", sidebar["children_bin_size"])
+
     # elif technique in ["Generalization - Age", "Generalization - BMI"]:
     #     st.write("Generalization interval:", sidebar["bin_size"])
     #     st.write("Data range:", sidebar["data_range"])

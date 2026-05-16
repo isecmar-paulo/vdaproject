@@ -301,6 +301,8 @@ def compute_privacy_score(
     age_range=None,
     bmi_range=None,
     charges_range=None,
+    children_bin_size=None,
+    children_range=None,
 ):
     if generalized_attributes is None:
         generalized_attributes = []
@@ -322,7 +324,9 @@ def compute_privacy_score(
             age_range=age_range,
             bmi_range=bmi_range,
             charges_bin_size=charges_bin_size, 
-            charges_range=charges_range
+            charges_range=charges_range, 
+            children_bin_size=children_bin_size,
+            children_range=children_range,
         )
 
     return 0.0
@@ -375,6 +379,8 @@ def compute_generalization_privacy_score(
     bmi_range=None,
     charges_bin_size=None,
     charges_range=None,
+    children_bin_size=None,
+    children_range=None,
 ):
     scores = []
 
@@ -386,7 +392,17 @@ def compute_generalization_privacy_score(
 
     if "charges" in generalized_attributes and charges_bin_size is not None and charges_range > 0:
         scores.append(min(1.0, charges_bin_size / charges_range))
-            
+
+    if (
+        "children" in generalized_attributes
+        and children_bin_size is not None
+        and children_range is not None
+        and children_range > 0
+    ):
+        scores.append(
+            min(1.0, children_bin_size / children_range)
+        )
+
 
     if "region" in generalized_attributes:
         scores.append(0.5)
