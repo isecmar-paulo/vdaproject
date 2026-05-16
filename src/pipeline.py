@@ -99,6 +99,13 @@ def apply_generalization_raw(df_original, sidebar):
             column="charges",
             bin_size=sidebar["charges_bin_size"],
         )
+    
+    if "children" in sidebar["generalized_attributes"]:
+        df_generalized = generalize_numeric_column(
+            df=df_generalized,
+            column="children",
+            bin_size=sidebar["children_bin_size"],
+        )
 
     if "region" in sidebar["generalized_attributes"]:
         df_generalized = generalize_region(df_generalized)
@@ -220,6 +227,8 @@ def compute_evaluation_results(
         bmi_range=sidebar["bmi_range"],
         charges_bin_size=sidebar["charges_bin_size"],
         charges_range=sidebar["charges_range"],
+        children_bin_size=sidebar["children_bin_size"],
+        children_range=sidebar["children_range"],
     )
 
     # ------------------------------------------------------------

@@ -31,6 +31,8 @@ def render_sidebar(df_prepared, numeric_columns):
     bmi_range = None
     charges_bin_size = None
     charges_range = None
+    children_bin_size = None
+    children_range = None
 
 
     # if technique == "Generalization - Age":
@@ -62,7 +64,7 @@ def render_sidebar(df_prepared, numeric_columns):
     if technique == "Generalization":
         generalized_attributes = st.sidebar.multiselect(
             "Attributes to generalize",
-            ["age", "bmi", "region", "charges"],
+            ["age", "bmi", "charges", "children", "region"],
             default=["age"],
             help="Select one or more attributes to generalize. " \
             "Low-cardinality discrete variables such as children "  
@@ -111,6 +113,22 @@ def render_sidebar(df_prepared, numeric_columns):
             st.sidebar.caption(
                 "Region will be generalized from four categories into two broader groups: north and south."
             )
+        
+        if "children" in generalized_attributes:
+            children_range = df_prepared["children"].max() - df_prepared["children"].min()
+
+            children_bin_size = st.sidebar.slider(
+                "Children generalization interval",
+                min_value=1,
+                max_value=int(children_range),
+                value=2,
+                step=1,
+                help=(
+                    "Defines the interval size used to generalize the number of children. "
+                ),
+            )
+
+        
 
     elif technique == "Gaussian Noise":
         sigma = st.sidebar.slider(
@@ -206,6 +224,8 @@ def render_sidebar(df_prepared, numeric_columns):
         "charges_range": charges_range,
         "age_range": age_range,
         "bmi_range": bmi_range,
+        "children_bin_size": children_bin_size,
+        "children_range": children_range,
         "bins": bins,
         "selected_column": selected_column,
         "x_column": x_column,
