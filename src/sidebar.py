@@ -64,7 +64,9 @@ def render_sidebar(df_prepared, numeric_columns):
             "Attributes to generalize",
             ["age", "bmi", "region", "charges"],
             default=["age"],
-            help="Select one or more attributes to generalize."
+            help="Select one or more attributes to generalize. " \
+            "Low-cardinality discrete variables such as children "  
+            "generally provide limited privacy gains through generalization."
         )
 
         if "age" in generalized_attributes:
@@ -100,7 +102,7 @@ def render_sidebar(df_prepared, numeric_columns):
                 step=100.0,
                 help=(
                     "Defines the interval size used to generalize medical charges. "
-                    "Larger intervals increase privacy but reduce precision."
+                    "Larger intervals increase privacy."
                 ),
             )
 
@@ -133,7 +135,7 @@ def render_sidebar(df_prepared, numeric_columns):
             max_value=5.0,
             value=1.0,
             step=0.1,
-            help="Lower ε provides stronger privacy but usually reduces utility.",
+            help="Lower ε provides stronger privacy.",
         )
 
         selected_columns = st.sidebar.multiselect(
@@ -182,7 +184,7 @@ def render_sidebar(df_prepared, numeric_columns):
         max_value=60,
         value=20,
         step=5,
-        help="Used in histograms and in KL/JS divergence calculation.",
+        help="Used in histograms and in JS divergence calculation.",
     )
 
     if technique in ["Gaussian Noise", "Laplace Noise"] and not selected_columns:

@@ -10,6 +10,7 @@ from src.privacy_methods import (
 
 
 from src.statistical_analysis import (
+    compare_categorical_statistics,
     compare_datasets,
     compute_utility_score,
     compute_privacy_score,
@@ -75,9 +76,76 @@ def load_and_prepare_data(data_path: str):
         "numeric_columns": numeric_columns,
     }
 
+def apply_generalization_raw(df_original, sidebar):
+    df_generalized = df_original.copy()
 
+    if "age" in sidebar["generalized_attributes"]:
+        df_generalized = generalize_numeric_column(
+            df=df_generalized,
+            column="age",
+            bin_size=sidebar["age_bin_size"],
+        )
+
+    if "bmi" in sidebar["generalized_attributes"]:
+        df_generalized = generalize_numeric_column(
+            df=df_generalized,
+            column="bmi",
+            bin_size=sidebar["bmi_bin_size"],
+        )
+
+    if "charges" in sidebar["generalized_attributes"]:
+        df_generalized = generalize_numeric_column(
+            df=df_generalized,
+            column="charges",
+            bin_size=sidebar["charges_bin_size"],
+        )
+
+    if "region" in sidebar["generalized_attributes"]:
+        df_generalized = generalize_region(df_generalized)
+
+    return df_generalized
 
 def apply_selected_transformation(df_original, df_prepared, sidebar):
+    technique = sidebar["technique"]
+
+    if technique == "None":
+        return df_original.copy(), df_prepared.copy()
+
+    if technique == "Generalization":
+        df_generalized_raw = apply_generalization_raw(
+            df_original=df_original,
+            sidebar=sidebar,
+        )
+
+        df_generalized_prepared = preprocess_dataset(df_generalized_raw)
+
+        return df_generalized_raw, df_generalized_prepared
+
+    if technique == "Sampling":
+        df_sampled_raw = apply_privacy_technique(
+            df=df_original,
+            technique=technique,
+            sampling_rate=sidebar["sampling_rate"],
+        )
+
+        df_sampled_prepared = preprocess_dataset(df_sampled_raw)
+
+        return df_sampled_raw, df_sampled_prepared
+
+    df_transformed = apply_privacy_technique(
+        df=df_prepared,
+        technique=technique,
+        columns=sidebar["selected_columns"],
+        sigma=sidebar["sigma"],
+        sampling_rate=sidebar["sampling_rate"],
+        epsilon=sidebar["epsilon"],
+    )
+
+    return df_original.copy(), df_transformed
+
+
+
+""" def apply_selected_transformation(df_original, df_prepared, sidebar):
     technique = sidebar["technique"]
 
     if technique == "None":
@@ -97,9 +165,15 @@ def apply_selected_transformation(df_original, df_prepared, sidebar):
         sampling_rate=sidebar["sampling_rate"],
         epsilon=sidebar["epsilon"],
     )
+ """
 
-
-def compute_evaluation_results(df_prepared, df_transformed, sidebar):
+def compute_evaluation_results(
+    df_original,
+    df_prepared,
+    df_transformed_raw,
+    df_transformed,
+    sidebar,
+):
     """
     Compute statistical comparison, utility, privacy, and trade-off scores.
     """
@@ -107,11 +181,22 @@ def compute_evaluation_results(df_prepared, df_transformed, sidebar):
     # ------------------------------------------------------------
     # Dataset comparison
     # ------------------------------------------------------------
+    
     comparison = compare_datasets(
         df_original=df_prepared,
         df_transformed=df_transformed,
         bins=sidebar["bins"],
     )
+   
+
+    categorical_statistics = compare_categorical_statistics(
+        df_original=df_original,
+        df_transformed=df_transformed_raw,
+    )
+
+    comparison["categorical_statistics"] = categorical_statistics
+
+#comparison["categorical_statistics"] = categorical_statistics
 
     # ------------------------------------------------------------
     # Utility

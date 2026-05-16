@@ -23,6 +23,43 @@ def compute_descriptive_statistics(df: pd.DataFrame) -> pd.DataFrame:
     return df[numeric_columns].agg(["mean", "var", "std", "min", "max"]).T
 
 
+def compare_categorical_statistics(df_original, df_transformed):
+    """
+    Compare categorical variable distributions before and after transformation.
+    """
+
+    categorical_columns = df_original.select_dtypes(
+        include=["object", "category", "bool"]
+    ).columns.tolist()
+
+    results = []
+
+    for col in categorical_columns:
+        if col not in df_transformed.columns:
+            continue
+
+        original_counts = df_original[col].value_counts(normalize=True)
+        transformed_counts = df_transformed[col].value_counts(normalize=True)
+
+        categories = sorted(
+            set(original_counts.index).union(set(transformed_counts.index))
+        )
+
+        for category in categories:
+            results.append(
+                {
+                    "Variable": col,
+                    "Category": category,
+                    "Original Proportion": original_counts.get(category, 0.0),
+                    "Transformed Proportion": transformed_counts.get(category, 0.0),
+                    "Difference": transformed_counts.get(category, 0.0)
+                    - original_counts.get(category, 0.0),
+                }
+            )
+
+    return pd.DataFrame(results)
+
+
 def compute_correlation_matrix(df: pd.DataFrame) -> pd.DataFrame:
     """
     Compute Pearson correlation matrix for numeric variables.
@@ -219,6 +256,10 @@ def compare_datasets(
     bins: int = 20
 ) -> dict:
     return {
+        "categorical_statistics": compare_categorical_statistics(
+            df_original,
+            df_transformed,
+        ),
         "descriptive_statistics": compare_descriptive_statistics(
             df_original,
             df_transformed
@@ -354,3 +395,5 @@ def compute_generalization_privacy_score(
         return 0.0
 
     return float(sum(scores) / len(scores))
+
+

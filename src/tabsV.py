@@ -547,13 +547,7 @@ def render_visual_tab(df_prepared, df_transformed, sidebar, evaluation):
     )
 
     st.subheader("JS Divergence")
-    st.caption(
-    """
-    This chart identifies which variables were most affected by the transformation.
-    Variables with higher JS Divergence experienced greater distributional change.
-    Values close to zero indicate strong preservation of the original distribution.
-    """
-    )
+
     st.plotly_chart(
         plot_metric_bar_chart(
             comparison["distribution_similarity"],
@@ -673,3 +667,84 @@ def render_tradeoff_tab(sidebar, evaluation, df_tradeoff_comparison, df_prepared
         key="dual_bar_chart",
     )
 
+# Automatic Parameter Exploration
+    
+    st.subheader("5. Automatic Parameter Exploration")
+
+    st.caption(
+        """
+        This section evaluates multiple parameter configurations automatically.
+        It helps identify which configurations provide the best balance between
+        privacy and utility.
+        """
+    )
+
+    available_sweep_techniques = [
+        "Gaussian Noise",
+        "Laplace Noise",
+        "Sampling",
+    ]
+
+    selected_sweep_techniques = st.multiselect(
+        "Techniques for parameter exploration",
+        available_sweep_techniques,
+        default=available_sweep_techniques,
+        help="Select one or more techniques to include in the automatic parameter exploration.",
+    )
+
+    run_sweep = st.button("Run parameter exploration")
+
+    if run_sweep:
+
+        if not selected_sweep_techniques:
+            st.warning("Please select at least one technique.")
+            st.stop()
+
+        df_sweep = run_parameter_sweep(
+            df_prepared=df_prepared,
+            numeric_columns=numeric_columns,
+            bins=sidebar["bins"],
+            selected_techniques=selected_sweep_techniques,
+        )
+
+        st.subheader("Parameter Sweep Results")
+        st.dataframe(df_sweep)
+
+        best_configuration = df_sweep.iloc[0]
+
+        st.success(
+            f"Best configuration: {best_configuration['Technique']} "
+            f"with {best_configuration['Parameter']} = "
+            f"{best_configuration['Parameter Value']} "
+            f"(Trade-off Score = {best_configuration['Trade-off Score']:.4f})"
+        )
+
+        fig_sweep = plot_parameter_sweep_tradeoff(df_sweep)
+
+        st.plotly_chart(
+            fig_sweep,
+            use_container_width=True,
+            key="parameter_sweep_tradeoff",
+        )
+
+        fig_sweep_ranking = plot_parameter_sweep_ranking(df_sweep)
+
+        st.plotly_chart(
+            fig_sweep_ranking,
+            use_container_width=True,
+            key="parameter_sweep_ranking",
+        )
+
+        st.subheader("Trade-off Evolution by Parameter")
+
+        st.caption(
+            "This plot shows how the trade-off score evolves as the parameter changes for each selected technique."
+        )
+
+        fig_lines = plot_parameter_sweep_lines(df_sweep)
+
+        st.plotly_chart(
+            fig_lines,
+            use_container_width=True,
+            key="parameter_sweep_lines",
+        )
