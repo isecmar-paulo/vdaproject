@@ -542,14 +542,14 @@ def render_tradeoff_tab(sidebar, evaluation, df_tradeoff_comparison, df_prepared
         """
     )
 
-    #st.subheader("1. Current Configuration")
-    html_title1 = """
-    <div style="background-color: #e0f2fe; padding: 10px; border-radius: 5px; margin-bottom: 15px;">
-      <style="color: #0369a1; margin: 0;">1. Current configuration</style=>
-    </div>
-    """
+    st.success("**1. Current Configuration**")
+    #html_title1 = """
+    #<div style="background-color: #e0f2fe; padding: 10px; border-radius: 5px; margin-bottom: 15px;">
+    #  <style="color: #0369a1; margin: 0;">1. Current configuration</style=>
+    #</div>
+    #"""
 
-    st.markdown(html_title1, unsafe_allow_html=True)
+    #st.markdown(html_title1, unsafe_allow_html=True)
 
     df_tradeoff = pd.DataFrame([
         {
@@ -576,15 +576,15 @@ def render_tradeoff_tab(sidebar, evaluation, df_tradeoff_comparison, df_prepared
 
     
 
-    #st.subheader("2. Current Privacy-Utility Plot")
+    st.success("**2. Current Privacy-Utility Plot**")
 
-    html_title2 = """
+    #html_title2 = """
     
-    <div style="background-color: #e0f2fe; padding: 10px; border-radius: 5px; margin-bottom: 15px;">
-      <style="color: #0369a1; margin: 0;">2. Privacy-Utility Plot</style=>
-    </div>
-    """
-    st.markdown(html_title2, unsafe_allow_html=True)
+    #<div style="background-color: #e0f2fe; padding: 10px; border-radius: 5px; margin-bottom: 15px;">
+    #  <style="color: #0369a1; margin: 0;">2. Privacy-Utility Plot</style=>
+    #</div>
+    #"""
+    #st.markdown(html_title2, unsafe_allow_html=True)
 
     fig_tradeoff = plot_tradeoff_comparison(df_tradeoff)
 
