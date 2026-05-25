@@ -561,19 +561,17 @@ def render_tradeoff_tab(sidebar, evaluation, df_tradeoff_comparison, df_prepared
     ])
 
     nome_da_tecnica = df_tradeoff["Technique"].iloc[0]
+    st.metric(label="Selected Technique", value=nome_da_tecnica)
 
-    col1, col2, col3, col4 = st.columns(4)
+    col1, col2, col3 = st.columns(3)
 
     with col1:
-        st.metric(label="Selected Technique:", value=nome_da_tecnica)
-
-    with col2:
         st.metric("Utility Score", round(utility_score, 4))
 
-    with col3:
+    with col2:
         st.metric("Privacy Score", round(privacy_score, 4))
 
-    with col4:
+    with col3:
         st.metric("Trade-off Score", round(tradeoff_score, 4))
 
     
