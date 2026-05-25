@@ -325,12 +325,17 @@ def render_statistical_tab(evaluation, sidebar):
     most_affected = comparison["distribution_similarity"].sort_values(
         by="js_divergence",
         ascending=False,
-    ).head(3)
+    ).head(4)
 
-    st.dataframe(most_affected)
+    st.dataframe(
+        most_affected,
+        column_config={
+            "kl_divergence": None
+        }
+    )
 
-    st.subheader("Distribution Similarity Metrics")
-    st.dataframe(comparison["distribution_similarity"])
+    #st.subheader("Distribution Similarity Metrics")
+    #st.dataframe(comparison["distribution_similarity"])
 
 
 def render_visual_tab(df_prepared, df_transformed, sidebar, evaluation):
@@ -351,20 +356,20 @@ def render_visual_tab(df_prepared, df_transformed, sidebar, evaluation):
         "Visual comparison of distributions to observe changes in central tendency and dispersion."
     )
 
-    col1, col2 = st.columns(2)
+    #col1, col2 = st.columns(2)
 
-    with col1:
-        st.write("Histogram Comparison")        
-        st.plotly_chart(
+    #with col1:
+    st.write("Histogram Comparison")        
+    st.plotly_chart(
             plot_histogram_comparison(
                 df_prepared,
                 df_transformed,
                 selected_column,
             ),
-            use_container_width=True,
-            key="visual_statistical_histogram",
-        )
-        with st.expander("What does 'Density' mean?"):
+        use_container_width=True,
+        key="visual_statistical_histogram",
+    )
+    with st.expander("What does 'Density' mean?"):
             st.markdown(
                 """
                 **Probability Density Interpretation**
@@ -380,12 +385,12 @@ def render_visual_tab(df_prepared, df_transformed, sidebar, evaluation):
                 The probability of observing values within a given interval is approximated by:
 
                 **probability ≈ density × bin width**                
-                """
-            )
+               """
+    )
 
-    with col2:
-        st.write("Boxplot Comparison")
-        st.plotly_chart(
+    #with col2:
+    st.write("Boxplot Comparison")
+    st.plotly_chart(
             plot_boxplot_comparison(
                 df_prepared,
                 df_transformed,
@@ -393,7 +398,7 @@ def render_visual_tab(df_prepared, df_transformed, sidebar, evaluation):
             ),
             use_container_width=True,
             key="visual_statistical_boxplot",
-        )
+    )
 
     # st.subheader("2. Relationship Preservation")
 
@@ -460,41 +465,7 @@ def render_visual_tab(df_prepared, df_transformed, sidebar, evaluation):
             key="visual_transformed_correlation2",
         )
 
-    st.subheader("Correlation Difference Heatmap")
-
-    st.plotly_chart(
-        plot_correlation_heatmap(
-            comparison["correlation_difference"],
-            "Correlation Difference (Transformed - Original)",
-        ),
-        width='stretch',
-        key="visual_correlation_heatmap",
-    )
-
-    st.subheader("Pairwise Correlation Preservation")
-
-    st.caption(
-        "Each point represents a pairwise correlation. Points close to the dashed diagonal indicate better preservation of relationships."
-    )
-
-    st.plotly_chart(
-        plot_correlation_scatter(
-            comparison["original_correlation"],
-            comparison["transformed_correlation"],
-        ),
-        width='stretch',
-        key="visual_correlation_scatter2",
-    )
-
-    st.plotly_chart(
-        plot_top_correlation_changes(
-            comparison["original_correlation"],
-            comparison["transformed_correlation"],
-        ),
-        width='stretch',
-        key="visual_topcorrelation",
-    )
-
+    
 
     #st.subheader("Correlation Difference Heatmap")
 
