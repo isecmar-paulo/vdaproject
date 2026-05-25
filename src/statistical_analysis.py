@@ -369,7 +369,8 @@ def compute_tradeoff_score(utility: float, privacy: float) -> float:
     The geometric mean penalizes configurations where either
     privacy or utility is low.
     """
-    return float((utility * privacy) ** 0.5)
+    #return float((utility * privacy) ** 0.5)
+    return float((2 * utility * privacy) / (utility + privacy))
 
 def compute_generalization_privacy_score(
     generalized_attributes,
