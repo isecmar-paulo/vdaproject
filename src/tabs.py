@@ -350,7 +350,8 @@ def render_visual_tab(df_prepared, df_transformed, sidebar, evaluation):
     st.metric("Selected Technique", technique)
     
 
-    st.subheader("1. Statistical Properties")
+    #st.subheader("1. Statistical Properties")
+    st.info("**1. Statistical Properties**")
 
     st.caption(
         "Visual comparison of distributions to observe changes in central tendency and dispersion."
@@ -359,7 +360,15 @@ def render_visual_tab(df_prepared, df_transformed, sidebar, evaluation):
     #col1, col2 = st.columns(2)
 
     #with col1:
-    st.write("Histogram Comparison")        
+    #html_title = """
+    #<div style="background-color: #f0f2f6; color: #31333F; padding: 4px 12px; border-radius: 6px; margin-bottom: 15px; display: inline-block; font-weight: bold;">
+    #    Histogram Comparison
+    #</div>
+    #"""
+
+    #st.markdown(html_title, unsafe_allow_html=True)
+
+
     st.plotly_chart(
             plot_histogram_comparison(
                 df_prepared,
@@ -389,7 +398,7 @@ def render_visual_tab(df_prepared, df_transformed, sidebar, evaluation):
     )
 
     #with col2:
-    st.write("Boxplot Comparison")
+    #st.info("Boxplot Comparison")
     st.plotly_chart(
             plot_boxplot_comparison(
                 df_prepared,
@@ -434,7 +443,7 @@ def render_visual_tab(df_prepared, df_transformed, sidebar, evaluation):
     #             key="visual_transformed_density",
     #         )
     
-    st.subheader("2. Relationship Preservation")
+    st.info("**2. Relationship Preservation**")
 
     st.caption(
         "Visual inspection of relationships between variables after transformation."
@@ -467,40 +476,40 @@ def render_visual_tab(df_prepared, df_transformed, sidebar, evaluation):
 
     
 
-    #st.subheader("Correlation Difference Heatmap")
-
-    #st.plotly_chart(
-    #    plot_correlation_heatmap(
-    #        comparison["correlation_difference"],
-    #        "Correlation Difference (Transformed - Original)",
-    #    ),
-    #    use_container_width=True,
-    #    key="visual_correlation_heatmap2",
-    #)
-
-    st.subheader("3. Distribution Similarity")
-
-    st.caption(
-        "Visual comparison of distribution changes using overlay histograms and divergence metrics."
-    )
+    st.subheader("Correlation Difference Heatmap")
 
     st.plotly_chart(
-        plot_histogram_comparison(
-            df_prepared,
-            df_transformed,
-            selected_column,
+        plot_correlation_heatmap(
+            comparison["correlation_difference"],
+            "Correlation Difference (Transformed - Original)",
         ),
         use_container_width=True,
-        key="distribution_similarity_histogram",
+        key="visual_correlation_heatmap2",
     )
 
-    st.subheader("JS Divergence")
+    st.info("**3. Distribution Similarity**")
+
     st.caption(
-    """
-    This chart identifies which variables were most affected by the transformation.
-    Variables with higher JS Divergence experienced greater distributional change.
-    Values close to zero indicate strong preservation of the original distribution.
-    """
+        "Visual comparison of distribution changes using divergence metrics."
+    )
+
+    #st.plotly_chart(
+    #    plot_histogram_comparison(
+    #        df_prepared,
+    #        df_transformed,
+    #        selected_column,
+    #    ),
+    #    use_container_width=True,
+    #    key="distribution_similarity_histogram",
+    #)
+
+    st.subheader(
+        "JS Divergence",
+        help=(
+            "This chart identifies which variables were most affected by the transformation. "
+            "Variables with higher JS Divergence experienced greater distributional change. "
+            "Values close to zero indicate strong preservation of the original distribution."
+        )
     )
     st.plotly_chart(
         plot_metric_bar_chart(
@@ -533,18 +542,14 @@ def render_tradeoff_tab(sidebar, evaluation, df_tradeoff_comparison, df_prepared
         """
     )
 
-    st.subheader("1. Current Configuration")
+    #st.subheader("1. Current Configuration")
+    html_title1 = """
+    <div style="background-color: #e0f2fe; padding: 10px; border-radius: 5px; margin-bottom: 15px;">
+      <style="color: #0369a1; margin: 0;">1. Current configuration</style=>
+    </div>
+    """
 
-    col1, col2, col3 = st.columns(3)
-
-    with col1:
-        st.metric("Utility Score", round(utility_score, 4))
-
-    with col2:
-        st.metric("Privacy Score", round(privacy_score, 4))
-
-    with col3:
-        st.metric("Trade-off Score", round(tradeoff_score, 4))
+    st.markdown(html_title1, unsafe_allow_html=True)
 
     df_tradeoff = pd.DataFrame([
         {
@@ -555,9 +560,33 @@ def render_tradeoff_tab(sidebar, evaluation, df_tradeoff_comparison, df_prepared
         }
     ])
 
-    st.dataframe(df_tradeoff)
+    nome_da_tecnica = df_tradeoff["Technique"].iloc[0]
 
-    st.subheader("2. Current Privacy-Utility Plot")
+    col1, col2, col3, col4 = st.columns(4)
+
+    with col1:
+        st.metric(label="Selected Technique:", value=nome_da_tecnica)
+
+    with col2:
+        st.metric("Utility Score", round(utility_score, 4))
+
+    with col3:
+        st.metric("Privacy Score", round(privacy_score, 4))
+
+    with col4:
+        st.metric("Trade-off Score", round(tradeoff_score, 4))
+
+    
+
+    #st.subheader("2. Current Privacy-Utility Plot")
+
+    html_title2 = """
+    
+    <div style="background-color: #e0f2fe; padding: 10px; border-radius: 5px; margin-bottom: 15px;">
+      <style="color: #0369a1; margin: 0;">2. Privacy-Utility Plot</style=>
+    </div>
+    """
+    st.markdown(html_title2, unsafe_allow_html=True)
 
     fig_tradeoff = plot_tradeoff_comparison(df_tradeoff)
 
