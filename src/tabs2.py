@@ -596,4 +596,57 @@ def render_tradeoff_tab(sidebar, evaluation, df_tradeoff_comparison, df_prepared
         key="current_tradeoff_plot",
     )
 
-    
+    st.divider()
+
+    st.subheader("3. Comparison Across Techniques")
+
+    st.caption(
+        """
+        This comparison evaluates the current user-selected configuration against
+        default configurations of other privacy-preserving techniques.
+        """
+    )
+
+    st.dataframe(df_tradeoff_comparison)
+
+    st.subheader("4. Privacy-Utility Comparison Plot")
+
+    fig_tradeoff_comparison = plot_tradeoff_comparison(
+        df_tradeoff_comparison,
+    )
+
+    st.plotly_chart(
+        fig_tradeoff_comparison,
+        use_container_width=True,
+        key="technique_tradeoff_comparison_plot",
+    )
+
+    st.subheader("Trade-off Ranking")
+
+    fig_bar = px.bar(
+        df_tradeoff_comparison.sort_values(
+            by="Trade-off Score",
+            ascending=True,
+        ),
+        x="Trade-off Score",
+        y="Technique",
+        orientation="h",
+        title="Technique Ranking by Trade-off Score",
+    )
+
+    st.plotly_chart(
+        fig_bar,
+        use_container_width=True,
+        key="tradeoff_ranking_bar",
+    )
+
+    st.subheader("Privacy vs Utility (Side-by-Side)")
+
+    fig_dual = plot_privacy_utility_dual_bar(df_tradeoff_comparison)
+
+    st.plotly_chart(
+        fig_dual,
+        use_container_width=True,
+        key="dual_bar_chart",
+    )
+
