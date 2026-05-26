@@ -476,7 +476,7 @@ def render_visual_tab(df_prepared, df_transformed, sidebar, evaluation):
 
     
 
-    st.subheader("Correlation Difference Heatmap")
+    st.subheader("Correlation Difference")
 
     st.plotly_chart(
         plot_correlation_heatmap(

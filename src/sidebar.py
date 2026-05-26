@@ -251,8 +251,8 @@ def render_sidebar_footer():
                 </span></p>
                 <p style="text-align: justify; padding-left: 1rem; padding-right: 1rem;">
                 Project developed for the Visualization and Data Analysis module, 
-                integrated into the Transversal and Transferable Competences II course unit 
-                of the University of Aveiro’s third-cycle programme.
+                as part of the Transversal and Transferable Competences II course  
+                in the University of Aveiro’s third-cycle program.
                 </p>
             </div>
             """,
